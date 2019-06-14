@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-    s.name         = 'swiftScan'
+    s.name         = 'LBXCodeScan'
     s.version      = '1.1.5'
     s.summary      = 'ios swift scan wrapper'
     s.homepage     = 'https://github.com/MxABC/swiftScan'

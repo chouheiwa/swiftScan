@@ -19,37 +19,31 @@ public protocol QRRectDelegate {
 }
 
 open class LBXScanViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
  //返回扫码结果，也可以通过继承本控制器，改写该handleCodeResult方法即可
-   open weak var scanResultDelegate: LBXScanViewControllerDelegate?
+    open weak var scanResultDelegate: LBXScanViewControllerDelegate?
     
     open var delegate: QRRectDelegate?
     
-   open var scanObj: LBXScanWrapper?
+    open var scanObj: LBXScanWrapper?
     
-   open var scanStyle: LBXScanViewStyle? = LBXScanViewStyle()
+    open var scanStyle: LBXScanViewStyle? = LBXScanViewStyle()
     
-   open var qRScanView: LBXScanView?
-
-    
-    //启动区域识别功能
-   open var isOpenInterestRect = false
-    
-    //识别码的类型
-   public var arrayCodeType:[AVMetadataObject.ObjectType]?
-    
-    //是否需要识别后的当前图像
-   public  var isNeedCodeImage = false
-    
+    open var qRScanView: LBXScanView?
+    /// 启动区域识别功能
+    open var isOpenInterestRect = false
+    /// 识别码的类型
+    public var arrayCodeType:[AVMetadataObject.ObjectType]?
+    /// 是否需要识别后的当前图像
+    public var isNeedCodeImage = false
     //相机启动提示文字
-    public var readyString:String! = "loading"
+    public var readyString:String! = "相机启动中"
+
+    private var scanDidSuccess: ((LBXScanResult)->Void)?
+
+    private var scanDidFailed: ((String)->Void)?
 
     override open func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
-        
-              // [self.view addSubview:_qRScanView];
         self.view.backgroundColor = UIColor.black
         self.edgesForExtendedLayout = UIRectEdge(rawValue: 0)
     }
@@ -88,8 +82,7 @@ open class LBXScanViewController: UIViewController, UIImagePickerControllerDeleg
             }
             
             //指定识别几种码
-            if arrayCodeType == nil
-            {
+            if arrayCodeType == nil {
                 arrayCodeType = [AVMetadataObject.ObjectType.qr as NSString ,AVMetadataObject.ObjectType.ean13 as NSString ,AVMetadataObject.ObjectType.code128 as NSString] as [AVMetadataObject.ObjectType]
             }
             
@@ -133,24 +126,9 @@ open class LBXScanViewController: UIViewController, UIImagePickerControllerDeleg
      */
     open func handleCodeResult(arrayResult:[LBXScanResult])
     {
-        if let delegate = scanResultDelegate  {
-            
-            self.navigationController? .popViewController(animated: true)
-            let result:LBXScanResult = arrayResult[0]
-            
-            delegate.scanFinished(scanResult: result, error: nil)
-
-        }else{
-            
-            for result:LBXScanResult in arrayResult
-            {
-                print("%@",result.strScanned ?? "")
-            }
-            
-            let result:LBXScanResult = arrayResult[0]
-            
-            showMsg(title: result.strBarCodeType, message: result.strScanned)
-        }
+        self.navigationController?.popViewController(animated: true)
+        let result:LBXScanResult = arrayResult[0]
+        scanDidSuccess?(result)
     }
     
     override open func viewWillDisappear(_ animated: Bool) {
@@ -205,21 +183,42 @@ open class LBXScanViewController: UIViewController, UIImagePickerControllerDeleg
     
     func showMsg(title:String?,message:String?)
     {
-        
         let alertController = UIAlertController(title: nil, message:message, preferredStyle: UIAlertController.Style.alert)
-        let alertAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: UIAlertAction.Style.default) { (alertAction) in
-                
-//                if let strongSelf = self
-//                {
-//                    strongSelf.startScan()
-//                }
-            }
+        let alertAction = UIAlertAction(title: NSLocalizedString("OK", comment: "OK"), style: UIAlertAction.Style.default) { (alertAction) in}
         
-            alertController.addAction(alertAction)
-            present(alertController, animated: true, completion: nil)
+        alertController.addAction(alertAction)
+        present(alertController, animated: true, completion: nil)
     }
     deinit
     {
 //        print("LBXScanViewController deinit")
+    }
+}
+
+extension LBXScanViewController {
+    public class func show(from controller: UIViewController,
+                           lineImage: UIImage? = nil,
+                           isQrcode: Bool = true,
+                           success: @escaping (LBXScanResult)->Void,
+                           failture: @escaping (String)->Void) {
+        var style = LBXScanViewStyle(isQrcode: isQrcode)
+
+        style.animationImage = lineImage
+
+        let vc = LBXScanViewController()
+
+        vc.scanStyle = style
+
+        vc.isOpenInterestRect = true
+
+        vc.scanDidSuccess = { [weak vc] value in
+            vc?.navigationController?.popViewController(animated: true)
+
+            success(value)
+        }
+
+        vc.scanDidFailed = failture
+
+        controller.navigationController?.pushViewController(vc, animated: true)
     }
 }

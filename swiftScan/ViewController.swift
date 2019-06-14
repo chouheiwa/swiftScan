@@ -22,7 +22,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         ["改变尺寸", "changeSize"],
         ["条形码效果", "notSquare"],
         ["二维码/条形码生成", "myCode"],
-        ["相册", "openLocalPhotoAlbum"]
+        ["相册", "openLocalPhotoAlbum"],
+        ["自定义", "openLocalPhotoAlbum"]
     ]
 
     override func viewDidLoad() {
@@ -79,6 +80,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             self.myCode()
         case 10:
             self.openLocalPhotoAlbum()
+        case 11:
+            self.design()
         default:
             break
         }
@@ -156,9 +159,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         style.photoframeAngleH = 16
         style.isNeedShowRetangle = false
 
-        style.anmiationStyle = LBXScanViewAnimationStyle.LineStill
+        style.anmiationStyle = LBXScanViewAnimationStyle.LineMove
 
-        style.animationImage = createImageWithColor(color: UIColor.red)
+        style.animationImage = UIImage(named: "CodeScan.bundle/qrcode_scan_light_green")
+
+//        style.animationImage = createImageWithColor(color: UIColor.red)
         //非正方形
         //设置矩形宽高比
         style.whRatio = 4.3/2.18
@@ -347,6 +352,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 LBXPermissions.jumpToSystemPrivacySetting()
             }
         }
+    }
+
+    func design() {
+        LBXScanViewController.show(from: self, lineImage: UIImage(named: "CodeScan.bundle/qrcode_scan_light_green"), isQrcode: true, success: {
+            print($0.strScanned)
+        }) { print($0) }
     }
 
     // MARK: - ----相册选择图片识别二维码 （条形码没有找到系统方法）

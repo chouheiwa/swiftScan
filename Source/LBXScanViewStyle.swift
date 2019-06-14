@@ -90,8 +90,45 @@ public struct LBXScanViewStyle
     // MARK: -非识别区域颜色,默认 RGBA (0,0,0,0.5)，范围（0--1）
     public var color_NotRecoginitonArea:UIColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.5);
     
-    public init()
-    {
-        
+    public init() {}
+}
+
+extension LBXScanViewStyle {
+    init(isQrcode: Bool) {
+        if isQrcode {
+            centerUpOffset = 60
+            xScanRetangleOffset = 30
+
+            if UIScreen.main.bounds.size.height <= 480 {
+                //3.5inch 显示的扫码缩小
+                centerUpOffset = 40
+                xScanRetangleOffset = 20
+            }
+
+            color_NotRecoginitonArea = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 0.4)
+
+            photoframeAngleStyle = LBXScanViewPhotoframeAngleStyle.Inner
+            photoframeLineW = 2.0
+            photoframeAngleW = 16
+            photoframeAngleH = 16
+
+            isNeedShowRetangle = false
+
+            anmiationStyle = LBXScanViewAnimationStyle.NetGrid
+        } else {
+            centerUpOffset = 44
+            photoframeAngleStyle = LBXScanViewPhotoframeAngleStyle.Inner
+            photoframeLineW = 4
+            photoframeAngleW = 28
+            photoframeAngleH = 16
+            isNeedShowRetangle = false
+
+            anmiationStyle = LBXScanViewAnimationStyle.LineMove
+
+            whRatio = 4.3/2.18
+            //离左边和右边距离
+            xScanRetangleOffset = 30
+        }
+
     }
 }
